@@ -36,6 +36,40 @@ def product_detail(request, pk):
 
     return response
 
+def manufacturer_list(request):
+    manufacturers = Manufacturer.objects.filter(active=True)
+    # Filter instead of all() to show only active manufacturers
+    data = {'manufacturer': list(manufacturers.values())}     # 'pk', 'name'
+    response = JsonResponse(data)
+    
+    return response
+
+def manufacturer_detail(request, pk):
+    try:
+        manufacturer = Manufacturer.objects.get(pk=pk)
+        manufacturer_products = manufacturer.products.all()
+        # the manufacturer model has an inverse relationship provided in the
+        # related_name field.
+        data = {'manufacturer': 
+                    {
+                    'name': manufacturer.name,
+                    'location': manufacturer.location,
+                    'active': manufacturer.active,
+                    'products': list(manufacturer_products.values())
+                    }
+                }
+        response = JsonResponse(data)
+     
+    except Manufacturer.DoesNotExist:   
+         response = JsonResponse({
+             'error': {
+                 'code': 404,
+                 'message': 'manufacturer not found!'
+             }
+         }, status=404)
+
+    return response
+
 
 
 """ from django.views.generic.detail import DetailView
